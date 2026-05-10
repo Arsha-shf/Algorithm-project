@@ -1,13 +1,9 @@
 import heapq
 
-# Representation : Adjacency List
-# Time complexity : O((V + E) log V)
-# Space complexity: O(V + E)
-
 def dijkstra(graph, source):
     distances = {node: float('inf') for node in graph}
     distances[source] = 0
-    heap = [(0, source)]  # (cost, node)
+    heap = [(0, source)]
 
     while heap:
         current_dist, u = heapq.heappop(heap)

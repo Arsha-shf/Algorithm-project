@@ -1,9 +1,4 @@
-# Representation : Adjacency List
-# Time complexity : O(V + E)
-# Space complexity: O(V + E)
-
 def dag_shortest_path(graph, source):
-    # Step 1: Topological sort via DFS
     visited = set()
     topo_order = []
 
@@ -18,9 +13,7 @@ def dag_shortest_path(graph, source):
         if node not in visited:
             dfs(node)
 
-    topo_order.reverse()  # reverse post-order = topological order
-
-    # Step 2: Relax edges in topological order
+    topo_order.reverse() 
     distances = {node: float('inf') for node in graph}
     distances[source] = 0
 

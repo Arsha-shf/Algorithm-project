@@ -1,57 +1,63 @@
 from graph_data import (
-    graph_A_small, graph_B_small, graph_C_small,
-    generate_graph_A, generate_graph_B, generate_graph_C
+    graph_A_small, graph_B_small, graph_C_small, graph_D_small,
+    generate_graph_A, generate_graph_B, generate_graph_C, generate_graph_D
 )
-from experiments import run_fair_comparison, run_capability_test, run_scalability_test
+from experiments import (
+    run_fair_comparison, run_capability_test,
+    run_scalability_test, fmt
+)
 
+ALGOS = ["dijkstra", "bellman_ford", "dag"]
+SIZES = [10, 50, 100, 200, 500]
 
-# ─────────────────────────────────────────────
 # PRINT HELPERS
-# ─────────────────────────────────────────────
 
 def print_fair(res):
-    print(f"\n{'='*55}")
-    print(f"  FAIR COMPARISON — {res['label']}")
-    print(f"  Nodes: {res['nodes']}  |  Edges: {res['edges']}")
-    print(f"{'='*55}")
-    print(f"  {'Algorithm':<16} {'Time (s)'}")
-    print(f"  {'-'*35}")
-    for algo in ["dijkstra", "bellman_ford", "dag"]:
-        t = res[algo]["time"]
-        print(f"  {algo:<16} {t:.6f}s")
+    print(f"\n  {res['label']} — n={res['nodes']}, edges={res['edges']}")
+    print(f"  {'Algorithm':<16} {'Time'}")
+    print(f"  {'─'*32}")
+    for a in ALGOS:
+        print(f"  {a:<16} {fmt(res[a]['time'])}")
 
 
 def print_capability(res):
-    print(f"\n{'='*55}")
-    print(f"  CAPABILITY TEST — Scenario {res['scenario']}")
-    print(f"  Nodes: {res['nodes']}  |  Edges: {res['edges']}")
-    print(f"{'='*55}")
-    for algo in ["dijkstra", "bellman_ford", "dag"]:
-        entry = res[algo]
-        t_str = f"{entry['time']:.6f}s" if entry["time"] is not None else "—"
-        print(f"  {algo:<16} {t_str:<14}  [{entry['note']}]")
+    scenario_labels = {
+        "A": "Scenario A — acyclic, non-negative",
+        "B": "Scenario B — cyclic, non-negative",
+        "C": "Scenario C — acyclic, negative edges",
+        "D": "Scenario D — cyclic, negative edges",
+    }
+    print(f"\n  {scenario_labels[res['scenario']]}")
+    for a in ALGOS:
+        e = res[a]
+        t = fmt(e["time"]) if e["time"] is not None else "—"
+        print(f"  {a:<16} {t:<18}  [{e['note']}]")
 
-    bf_dist = res["bellman_ford"]["distances"]
-    if bf_dist:
-        target = max(bf_dist.keys())
-        print(f"\n  Distance source → node {target}:")
-        for algo in ["dijkstra", "bellman_ford", "dag"]:
-            d = res[algo]["distances"]
-            val = d.get(target, "unreachable") if d else "N/A"
-            print(f"    {algo:<16} → {val}")
+    # Correctness line — show which algorithms agree and on what distance
+    valid = [(a, res[a]["distances"]) for a in ALGOS if res[a]["distances"] is not None]
+    if valid:
+        target = max(valid[0][1].keys())
+        distances = {a: d[target] for a, d in valid}
+        names = " & ".join(a for a, _ in valid)
+        dist_val = list(distances.values())[0]
+        all_agree = len(set(distances.values())) == 1
+        if all_agree:
+            print(f"  {'─'*50}")
+            if len(valid) == 1:
+                print(f"  Only {names} runs → distance {dist_val} to node {target}")
+            else:
+                print(f"  {names} return distance {dist_val} to node {target}")
 
 
-def print_scalability(records, title=""):
-    print(f"\n{'='*65}")
-    print(f"  SCALABILITY TEST — {title}")
-    print(f"{'='*65}")
-    print(f"  {'n':<8} {'Edges':<8} {'Dijkstra':<16} {'Bellman-Ford':<18} {'DAG'}")
-    print(f"  {'-'*60}")
+def print_scalability(records, label):
+    print(f"\n  {label}")
+    print(f"  {'n':<8} {'Edges':<8} {'Dijkstra':<18} {'Bellman-Ford':<18} {'DAG'}")
+    print(f"  {'─'*66}")
     for r in records:
-        d  = f"{r['dijkstra_time']:.6f}s"     if r['dijkstra_time']     is not None else "N/A"
-        bf = f"{r['bellman_ford_time']:.6f}s"  if r['bellman_ford_time'] is not None else "N/A"
-        dg = f"{r['dag_time']:.6f}s"           if r['dag_time']          is not None else "N/A"
-        print(f"  {r['n']:<8} {r['edges']:<8} {d:<16} {bf:<18} {dg}")
+        d  = fmt(r["dijkstra_time"])
+        bf = fmt(r["bellman_ford_time"])
+        dg = fmt(r["dag_time"])
+        print(f"  {r['n']:<8} {r['edges']:<8} {d:<18} {bf:<18} {dg}")
 
 
 # ─────────────────────────────────────────────
@@ -59,40 +65,44 @@ def print_scalability(records, title=""):
 # ─────────────────────────────────────────────
 
 def main():
-    graph_A_large = generate_graph_A(100)
 
-    # ── STEP 1: Fair Comparison ──────────────────
-    print("\n" + "█"*55)
-    print("  STEP 1 — FAIR COMPARISON")
-    print("  Same graph (A), all three algorithms")
-    print("  Graph A: DAG, non-negative weights, adjacency list")
-    print("  Bellman-Ford uses edge list representation")
-    print("█"*55)
+    print("""
+════════════════════════════════════════════════════════
+  COMPLEXITY REFERENCE
+════════════════════════════════════════════════════════
+  Algorithm       Time               Space       Representation
+  ──────────────────────────────────────────────────────────
+  Dijkstra        O((V+E) log V)     O(V + E)    Adjacency List
+  Bellman-Ford    O(V · E)           O(V + E)    Edge List
+  DAG             O(V + E)           O(V + E)    Adjacency List""")
 
-    print_fair(run_fair_comparison(graph_A_small, "graph_A_small (n=20)"))
-    print_fair(run_fair_comparison(graph_A_large, "graph_A_large (n=100)"))
+    print("""
+════════════════════════════════════════════════════════
+  STEP 1 — FAIR COMPARISON (Graph A)
+════════════════════════════════════════════════════════""")
 
-    # ── STEP 2: Capability Comparison ───────────
-    print("\n" + "█"*55)
-    print("  STEP 2 — CAPABILITY COMPARISON")
-    print("  A = clean DAG | B = cycles | C = negative edges")
-    print("█"*55)
+    print_fair(run_fair_comparison(graph_A_small, "graph_A_small"))
+    print_fair(run_fair_comparison(generate_graph_A(100), "graph_A_large"))
+
+    print("""
+════════════════════════════════════════════════════════
+  STEP 2 — CAPABILITY COMPARISON
+════════════════════════════════════════════════════════""")
 
     print_capability(run_capability_test(graph_A_small, "A"))
     print_capability(run_capability_test(graph_B_small, "B"))
     print_capability(run_capability_test(graph_C_small, "C"))
+    print_capability(run_capability_test(graph_D_small, "D"))
 
-    # ── STEP 3: Scalability ──────────────────────
-    print("\n" + "█"*55)
-    print("  STEP 3 — SCALABILITY TEST")
-    print("  Graph A, increasing input size")
-    print("█"*55)
+    print("""
+════════════════════════════════════════════════════════
+  STEP 3 — SCALABILITY
+════════════════════════════════════════════════════════""")
 
-    sizes = [10, 50, 100, 200, 500]
-    print_scalability(
-        run_scalability_test(generate_graph_A, sizes, "A"),
-        title="Graph A (DAG, non-negative)"
-    )
+    print_scalability(run_scalability_test(generate_graph_A, SIZES, "A"), "Graph A — acyclic, non-negative")
+    print_scalability(run_scalability_test(generate_graph_B, SIZES, "B"), "Graph B — cyclic (DAG: N/A)")
+    print_scalability(run_scalability_test(generate_graph_C, SIZES, "C"), "Graph C — negative edges (Dijkstra: N/A)")
+    print_scalability(run_scalability_test(generate_graph_D, SIZES, "D"), "Graph D — cyclic + negative (Dijkstra: N/A | DAG: N/A)")
 
 
 if __name__ == "__main__":
