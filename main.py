@@ -7,7 +7,7 @@ from experiments import (
     run_scalability_test, fmt
 )
 
-ALGOS = ["dijkstra", "bellman_ford", "dag"]
+ALGOS = ["dijkstra", "bellman_ford", "dag_shp"]
 SIZES = [10, 50, 100, 200, 500]
 
 # PRINT HELPERS
@@ -51,12 +51,12 @@ def print_capability(res):
 
 def print_scalability(records, label):
     print(f"\n  {label}")
-    print(f"  {'n':<8} {'Edges':<8} {'Dijkstra':<18} {'Bellman-Ford':<18} {'DAG'}")
+    print(f"  {'n':<8} {'Edges':<8} {'Dijkstra':<18} {'Bellman-Ford':<18} {'DAG-ShP':<18}")
     print(f"  {'─'*66}")
     for r in records:
         d  = fmt(r["dijkstra_time"])
         bf = fmt(r["bellman_ford_time"])
-        dg = fmt(r["dag_time"])
+        dg = fmt(r["dag_shp_time"])
         print(f"  {r['n']:<8} {r['edges']:<8} {d:<18} {bf:<18} {dg}")
 
 
@@ -74,12 +74,12 @@ def main():
   ──────────────────────────────────────────────────────────
   Dijkstra        O((V+E) log V)     O(V + E)    Adjacency List
   Bellman-Ford    O(V · E)           O(V + E)    Edge List
-  DAG             O(V + E)           O(V + E)    Adjacency List""")
+  DAG-ShP         O(V + E)           O(V + E)    Adjacency List""")
 
     print("""
 ════════════════════════════════════════════════════════
   STEP 1 — FAIR COMPARISON (Graph A)
-════════════════════════════════════════════════════════""")
+═══════════════════════════════════════════════════════════""")
 
     print_fair(run_fair_comparison(graph_A_small, "graph_A_small"))
     print_fair(run_fair_comparison(generate_graph_A(100), "graph_A_large"))
@@ -100,9 +100,9 @@ def main():
 ════════════════════════════════════════════════════════""")
 
     print_scalability(run_scalability_test(generate_graph_A, SIZES, "A"), "Graph A — acyclic, non-negative")
-    print_scalability(run_scalability_test(generate_graph_B, SIZES, "B"), "Graph B — cyclic (DAG: N/A)")
+    print_scalability(run_scalability_test(generate_graph_B, SIZES, "B"), "Graph B — cyclic (DAG-ShP: N/A)")
     print_scalability(run_scalability_test(generate_graph_C, SIZES, "C"), "Graph C — negative edges (Dijkstra: N/A)")
-    print_scalability(run_scalability_test(generate_graph_D, SIZES, "D"), "Graph D — cyclic + negative (Dijkstra: N/A | DAG: N/A)")
+    print_scalability(run_scalability_test(generate_graph_D, SIZES, "D"), "Graph D — cyclic + negative (Dijkstra: N/A | DAG-ShP: N/A)")
 
 
 if __name__ == "__main__":

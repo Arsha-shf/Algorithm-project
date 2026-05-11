@@ -13,7 +13,7 @@ def dag_shortest_path(graph, source):
         if node not in visited:
             dfs(node)
 
-    topo_order.reverse() 
+    topo_order.reverse()
     distances = {node: float('inf') for node in graph}
     distances[source] = 0
 

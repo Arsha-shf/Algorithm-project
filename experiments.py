@@ -1,7 +1,7 @@
 import time
 from dijkstra import dijkstra
 from bellman_ford import bellman_ford
-from dag import dag_shortest_path
+from dag_shp import dag_shortest_path
 from graph_data import to_edge_list
 
 
@@ -42,7 +42,7 @@ def run_fair_comparison(graph, label):
         "label": label, "nodes": nodes, "edges": edges,
         "dijkstra":     {"time": d_time,  "distances": d_result},
         "bellman_ford": {"time": bf_time, "distances": bf_result},
-        "dag":          {"time": dg_time, "distances": dg_result},
+        "dag_shp":          {"time": dg_time, "distances": dg_result},
     }
 
 def run_capability_test(graph, scenario_name):
@@ -71,11 +71,11 @@ def run_capability_test(graph, scenario_name):
         res["bellman_ford"] = {"time": t, "distances": r, "note": "✓ valid"}
 
     if scenario_name in ("B", "D"):
-        res["dag"] = {"time": None, "distances": None,
+        res["dag_shp"] = {"time": None, "distances": None,
                     "note": "✗ failed — cycles present"}
     else:
         r, t = _time_it(dag_shortest_path, graph, source)
-        res["dag"] = {"time": t, "distances": r, "note": "✓ valid"}
+        res["dag_shp"] = {"time": t, "distances": r, "note": "✓ valid"}
 
     return res
 
@@ -91,7 +91,7 @@ def run_scalability_test(generate_func, sizes, scenario_name):
 
         row["dijkstra_time"]     = _time_it(dijkstra,         graph,     source)[1] if scenario_name not in ("C", "D") else None
         row["bellman_ford_time"] = _time_it(bellman_ford,      edge_list, nodes, source)[1]
-        row["dag_time"]          = _time_it(dag_shortest_path, graph,     source)[1] if scenario_name not in ("B", "D") else None
+        row["dag_shp_time"]          = _time_it(dag_shortest_path, graph,     source)[1] if scenario_name not in ("B", "D") else None
 
         records.append(row)
     return records
