@@ -13,7 +13,7 @@ A comparative implementation and analysis of three shortest-path algorithms on f
 ├── graph_data.py       # Graph definitions and generators
 ├── dijkstra.py         # Dijkstra's algorithm (Adjacency List)
 ├── bellman_ford.py     # Bellman-Ford algorithm (Edge List)
-├── dag.py              # DAG Shortest Path (Topological Sort)
+├── dag_shp.py              # DAG Shortest Path (Topological Sort)
 ├── experiments.py      # Comparison logic (fair, capability, scalability)
 └── main.py             # Entry point — runs and prints all results
 ```
