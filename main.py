@@ -100,9 +100,9 @@ def main():
 ════════════════════════════════════════════════════════""")
 
     print_scalability(run_scalability_test(generate_graph_A, SIZES, "A"), "Graph A — acyclic, non-negative")
-    print_scalability(run_scalability_test(generate_graph_B, SIZES, "B"), "Graph B — cyclic (DAG-ShP: N/A)")
-    print_scalability(run_scalability_test(generate_graph_C, SIZES, "C"), "Graph C — negative edges (Dijkstra: N/A)")
-    print_scalability(run_scalability_test(generate_graph_D, SIZES, "D"), "Graph D — cyclic + negative (Dijkstra: N/A | DAG-ShP: N/A)")
+    print_scalability(run_scalability_test(generate_graph_B, SIZES, "B"), "Graph B — cyclic ")
+    print_scalability(run_scalability_test(generate_graph_C, SIZES, "C"), "Graph C — negative edges ")
+    print_scalability(run_scalability_test(generate_graph_D, SIZES, "D"), "Graph D — cyclic + negative ")
 
 
 if __name__ == "__main__":
